@@ -1,0 +1,157 @@
+###############################################################################
+# Base DN's
+###############################################################################
+dn: {{ axmBranch }}
+objectclass: top
+objectclass: organizationalUnit
+ou: {{ axmOu }}
+
+dn: ou=Groups,{{ axmSuffix }}
+objectclass: top
+objectclass: organizationalUnit
+ou: Groups
+
+dn: ou=ctscApplicationDataRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: organizationalUnit
+ou: ctscApplicationDataRepository
+
+dn: ou=ctscPolicyRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: organizationalUnit
+ou: ctscPolicyRepository
+
+dn: ou=ctscAdminRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: organizationalUnit
+ou: ctscAdminRepository
+
+###############################################################################
+# Liberty repository ou
+# The dn of this ou should match the cleartrust.data.ldap.libertystore.basedn
+# parameter in ldap.conf to enable the Liberty features.
+###############################################################################
+#dn: ou=ctscLibertyFederatedMappingRepository,{{ axmSuffix }}
+#objectclass: top
+#objectclass: organizationalUnit
+#ou: ctscLibertyFederatedMappingRepository
+
+###############################################################################
+# Sequence (ctscReservedSequence)
+###############################################################################
+dn: cn=PolicySequence,ou=ctscApplicationDataRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: ctscReservedSequence
+cn: PolicySequence
+ctscSequenceIncrement: 100
+ctscSequenceUpperBound: 100
+
+dn: cn=ApplicationDataSequence,ou=ctscApplicationDataRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: ctscReservedSequence
+cn: ApplicationDataSequence
+ctscSequenceIncrement: 100
+ctscSequenceUpperBound: 100
+
+dn: cn=AdminSequence,ou=ctscApplicationDataRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: ctscReservedSequence
+cn: AdminSequence
+ctscSequenceIncrement: 100
+ctscSequenceUpperBound: 100
+
+dn: cn=ExtendedAttributeOID,ou=ctscApplicationDataRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: ctscReservedSequence
+cn: ExtendedAttributeOID
+ctscSequenceIncrement: 1
+ctscSequenceUpperBound: 1
+
+###############################################################################
+# Default Password Policy
+###############################################################################
+dn: cn=Default Password Policy,ou=ctscPolicyRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: dlm1ManagedElement
+objectclass: policy
+objectclass: policyRule
+objectclass: ctscPasswordValidationConditionAuxClass
+objectclass: ctscPolicyTimeOffsetConditionAuxClass
+objectclass: ctscPasswordLockoutConditionAuxClass
+dlmDescription: Default Password Policy
+policyRuleName: Default Password Policy
+policyRulePriority: 0
+policyRuleEnabled: 1
+policyKeywords: PASSWORD
+ctscPasswordMinLength: 8
+ctscPasswordMaxLength: 32
+ctscPasswordHistoryLength: 0
+ctscPasswordDictionaryURL: file://words.txt
+ctscPasswordExcludedChars: ^&*(
+ctscPasswordRequireNonAlpha: true
+ctscPolicyTimeOffset: 5184000
+ctscMinimumPasswordLifetime: 0
+ctscPasswordLockoutEnable: false
+ctscRequireAdminUnlock: true
+ctscPasswordFailureResetInterval: 86400
+ctscLockoutDuration: 600
+ctscMaximumLoginFailure: 3
+cn: Default Password Policy
+
+###############################################################################
+# Default Administrative Group
+###############################################################################
+dn: cn=Default Administrative Group,ou=ctscAdminRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: groupOfUniqueNames
+objectclass: dlm1ManagedElement
+objectclass: ctscAdministrativeGroupAuxClass
+objectclass: policyRuleContainmentAuxClass
+ctscAdministrativeGroupName: Default Administrative Group
+ctscAdministrativeGroupQualifiedName: Default Administrative Group
+ctscAdministrativeGroupKeywords: DefaultPrivate
+dlmDescription: Default Administrative Group
+policyRulesAuxContainedSet: cn=Default Password Policy,ou=ctscPolicyRepository,{{ axmSuffix }}
+uniqueMember: cn=Default Administrative User,ou=ctscPolicyRepository,{{ axmSuffix }}
+cn: Default Administrative Group
+
+###############################################################################
+# Default Administrative Role
+###############################################################################
+dn: cn=Default Administrative Role,ou=ctscAdminRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: dlm1ManagedElement
+objectclass: ctscAdministrativeRole
+objectclass: ctscManagedObjectAuxClass
+ctscOwner: cn=Default Administrative Group,ou=ctscAdminRepository,{{ axmSuffix }}
+ctscAdministrativeRoleName: Default Administrative Role
+dlmDescription: Default Administrative Role
+cn: Default Administrative Role
+
+###############################################################################
+# Default Administrative User
+###############################################################################
+dn: cn=Default Administrative User,ou=ctscAdminRepository,{{ axmSuffix }}
+objectclass: top
+objectclass: dlm1ManagedElement
+objectclass: ctscManagedObjectAuxClass
+objectclass: ctscAdministrativeUserContainer
+ctscAdministrativeRoleList: cn=Default Administrative Role,ou=ctscAdminRepository,{{ axmSuffix }}
+ctscAdministrativeUserKeywords: SuperUser
+ctscUserDN: uid={{ axmAdmin }},{{ axmBranch }}
+ctscOwner: cn=Default Administrative Group,ou=ctscAdminRepository,{{ axmSuffix }}
+cn: Default Administrative User
+
+dn: uid={{ axmAdmin }},{{ axmBranch }}
+userPassword: {{ axmAdminPassword }}
+uid: {{ axmAdmin }}
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: ctscUserAuxClass
+givenName: System
+sn: Administrator
+cn: {{ axmAdmin }}
+ctscFailedLoginCount: 0
+

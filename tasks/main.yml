@@ -1,0 +1,27 @@
+---
+
+- name: 'Verification instance existante'
+  stat:
+    path: '{{ instanceHome }}/{{ instanceName }}'
+  register: check_inst
+
+- fail:
+    msg: "Instance {{ instanceHome }}/{{ instanceName }} inexistante"
+  when: check_inst.stat.exists == False
+
+- name: "Verification presence de la configuration AxM"
+  shell: "{{ odseeDsrkBin }}/ldapsearch -D 'cn=Directory Manager' -j '{{ instancePasswordDir }}/{{ instancePasswordFile }}' -h 'localhost' -p {{ instancePort }} -b '{{ axmSuffix }}' '{{ axmOu }}'"
+  changed_when: False
+  register: "checkAxm"
+
+- name: "Preparation ldif axm"
+  template:
+    src: "templates/install-iplanet.ldif.j2"
+    dest: "{{ instancePasswordDir }}/{{ instancePasswordFile }}_axm.ldif"
+    mode: 0600
+  when: "axmOu not in checkAxm.stdout"
+
+- name: "Chargement ldif axm"
+  shell: "{{ odseeDsrkBin }}/ldapmodify -a -D 'cn=Directory Manager' -j '{{ instancePasswordDir }}/{{ instancePasswordFile }}' -h 'localhost' -p {{ instancePort }} -f '{{ instancePasswordDir }}/{{ instancePasswordFile }}_axm.ldif' -e '{{ instancePasswordDir }}/{{ instancePasswordFile }}_axm.rejected'"
+  when: "axmOu not in checkAxm.stdout"
+
